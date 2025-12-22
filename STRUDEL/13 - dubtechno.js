@@ -48,18 +48,17 @@ setcpm(124 / 4);
 const KEY  = 'D'
 const MODE = ':Dorian'
 
-
 // =========================
 // PERCUSSIONS (KICK FIRST)
 // =========================
 
-KICK: s("bd bd bd bd")
+kick: s("bd bd bd bd")
   .bank("tr909")
   .lpf(1400)
   .dist(1.6)
   .duck(2)
 
-_HIHAT: s("~ hh ~ hh ~ hh ~ hh")
+hihat: s("~ hh ~ hh ~ hh ~ hh")
   .bank("tr808")
   // subtle humanization + occasional thinning (random removal)
   .degradeBy(perlin.range(0.02, 0.18).slow(10))
@@ -68,7 +67,7 @@ _HIHAT: s("~ hh ~ hh ~ hh ~ hh")
   .delay(perlin.range(0.00, 0.12).slow(16))
   .dist(0.8)
 
-_SNARE: s("~ cp ~ cp")
+snare: s("~ cp ~ cp")
   .bank("tr909")
   .lpf(perlin.range(1200, 3500).slow(12))
   .room(perlin.range(0.3, 1.0).slow(10))
@@ -78,7 +77,7 @@ _SNARE: s("~ cp ~ cp")
   .dist(0.7)
 
 // Rim/tick = dub event generator
-_RIM: s("{~ rim ~ ~ ~ rim ~ ~}%8")
+rim: s("{~ rim ~ ~ ~ rim ~ ~}%8")
   .bank("tr909")
   .dubTick()
 
@@ -87,7 +86,7 @@ _RIM: s("{~ rim ~ ~ ~ rim ~ ~}%8")
 // BASS
 // ======
 
-_BASS: n("{0 ~ 0 ~ 0 ~ [0 3] ~}%8")
+bass: n("{0 ~ 0 ~ 0 ~ [0 3] ~}%8")
   .scale(KEY + MODE)
   .sound("z_sine")
   // tiny drifting tone so it stays alive but still “sub-first”
@@ -100,7 +99,7 @@ _BASS: n("{0 ~ 0 ~ 0 ~ [0 3] ~}%8")
 // HARMONY (THE ENGINE)
 // ==================
 
-_CHORDS: cat([
+chord: cat([
     n("[0, 3, 7]".add("<0 0 0 2 0 4 0 7>".slow(6))),
     n("[0, 4, 7]".add("<0 0 0 0 2 0 5 0>".slow(8))).slow(2)
   ])
@@ -108,6 +107,7 @@ _CHORDS: cat([
   // event density is also slightly random (micro-variation without “busy”)
   .degradeBy(perlin.range(0.00, 0.22).slow(12))
   // dub chord organism (includes randomized reverb + delay + throws)
+  .gain(0.3)
   .dubChord(180, 1400)
   // extra echo ghosts (offset copies) with randomized wetness
   .off(1/16, x => x.gain(perlin.range(0.18, 0.45).slow(10)).delay(perlin.range(0.10, 0.38).slow(11)).room(perlin.range(1.8, 3.8).slow(9)))
@@ -118,20 +118,20 @@ _CHORDS: cat([
 // TEXTURE (CRACKLE + NOISE BED)
 // ===========================
 
-_CRACKLE: s("crackle*4")
+crackle: s("crackle*4")
   // random thinning so it “breathes”
   .degradeBy(perlin.range(0.15, 0.55).slow(8))
   .noiseBed()
   .fast(1)
 
-_NOISE: s("pink brown".slow(12))
+noise: s("pink brown".slow(12))
   .noiseBed()
 
 // ===========================
 // ATMOSPHERE (THE BACKCLOTH)
 // ===========================
 
-_ATMOS: n("{0 ~ ~ ~ ~ ~ ~ ~}%8")
+atmos: n("{0 ~ ~ ~ ~ ~ ~ ~}%8")
   .scale(KEY + MODE)
   .sound("gm_fx_atmosphere")
   .lpf(perlin.range(600, 2200).segment(96).slow(16))
@@ -146,7 +146,7 @@ _ATMOS: n("{0 ~ ~ ~ ~ ~ ~ ~}%8")
 // LEAD (optional, keep muted by underscore)
 // =====
 
-_LEAD: n("{~ ~ 7 ~ ~ ~ [9 10] ~}%16")
+lead: n("{~ ~ 7 ~ ~ ~ [9 10] ~}%16")
   .scale(KEY + 2 + MODE)
   .sound("gm_koto")
   .lpf(perlin.range(900, 3200).slow(14))

@@ -13,9 +13,9 @@ setcpm(120 / 4);
 const PTN_BD = "bd:8*4";
 const PTN_BEAT = "{30 50 30 50}%8";
 const PTN_BEAT2 = "{.25 .28 .25 .28}%8";
-KICK: s(PTN_BD).bank("tr505").dist(2).lpf(1500).duck(2);
+kick: s(PTN_BD).bank("tr505").dist(2).lpf(1500).duck(2);
 // .gain(1)
-HIHAT: s("~ hh ~ hh ~ hh ~ hh")
+hihat: s("~ hh ~ hh ~ hh ~ hh")
   .bank("tr909")
   .rarely((x) => x.ply(2));
 

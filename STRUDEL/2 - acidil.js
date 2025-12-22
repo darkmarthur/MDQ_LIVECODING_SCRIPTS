@@ -24,20 +24,20 @@ setcpm(120 / 4);
 const KEY = 'A'
 const MODE = ':Phrygian'
 
-_KICK: s("bd bd bd bd")
+_kick: s("bd bd bd bd")
   .bank("tr505")
   .lpf(1500)
   .dist(2)
   .duck(2)
 
 const OPENHAT = false;
-_HIHAT: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
+_hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
   .room(OPENHAT ? 2 : 0.4)
   .bank("tr808")
   .dist(1)
 
 const ISCLAP = true;
-_SNARE:  s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
+_snare:  s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .bank("tr909")
 
 ACID_BASS: cat([
@@ -49,12 +49,12 @@ ACID_BASS: cat([
   .fast(1)
   .orbit(2)
 
-_CHORDS: n("[0, 3, 5]".add("<0 0 4 7>"))
+_chord: n("[0, 3, 5]".add("<0 0 4 7>"))
   .scale(KEY + 3 + MODE)
   .sound("piano")
   .room(2)
 
-_LEAD: n("{1 1 3 5 ~ ~ [4 6] 5}%16")
+_lead: n("{1 1 3 5 ~ ~ [4 6] 5}%16")
   .scale(KEY + 3 + MODE)
   .transpose("0 2".slow(6))
   .sound("gm_koto")

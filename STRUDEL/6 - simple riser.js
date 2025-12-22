@@ -15,10 +15,10 @@ const MODE = ' minor';
 
 setcps(140/60/4)
 
-_KICK: s("sbd!4")
+_kick: s("sbd!4")
   .duck("2:3:4").duckattack(0.2).duckdepth(0.8)
 
-_HIHAT: s("~ hh ~ hh ~ hh ~ hh")
+_hihat: s("~ hh ~ hh ~ hh ~ hh")
   .velocity("[0 0.2 0.3 0.4]*4")
   .bank('RolandTR909')
 
@@ -47,7 +47,7 @@ _BASS:
     .distort(3.0)
 
 let PTN_LD = "3 4 5 [6 7]*2"
-_LEAD: n(PTN_LD)
+_lead: n(PTN_LD)
   .scale(KEY + '3' + MODE).fast(2)
   .transpose(0)
   // ._pianoroll({ fold: 1, cycles: 8 })

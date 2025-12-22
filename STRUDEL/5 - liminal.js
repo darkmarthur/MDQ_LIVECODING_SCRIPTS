@@ -27,13 +27,13 @@ const KEY = 'A'
 const MODE = ':Phrygian'
 
 const sidechain = true
-_KICK: s("bd bd bd bd")
+_kick: s("bd bd bd bd")
   .bank("tr505")
   .lpf(1000)
   .hpf(100)
   .dist(1)
 
-_SUB: n("0 0 0 0")
+_sub: n("0 0 0 0")
   .scale(KEY + 1 + MODE)
   .sound("sbd")
   .decay(1)
@@ -43,13 +43,13 @@ _SUB: n("0 0 0 0")
   
 
 const OPENHAT = false;
-_HIHAT: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
+_hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
   .room(OPENHAT ? 2 : 0.4)
   .bank("tr808")
   .dist(1)
 
 const ISCLAP = true;
-_SNARE:  s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
+_snare:  s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .bank("tr909")
 
 _ACID_BASS: cat([
@@ -62,7 +62,7 @@ _ACID_BASS: cat([
   .orbit(2)
   .gain(0.5)
 
-CHORDS: n("[0, 3, 5]".add("<0 0 4 7>"))
+chord: n("[0, 3, 5]".add("<0 0 4 7>"))
   .scale(KEY + 2 + MODE)
   .sound("piano")
   .off(0, (x) => x
@@ -71,7 +71,7 @@ CHORDS: n("[0, 3, 5]".add("<0 0 4 7>"))
   .room(2)
   .juxBy(1, rev)
 
-_ARP: cat(
+_arp: cat(
     n("<[0, 1, 3] [3, 5, 7]>").arp("0 1 3 5 7 9"),
     n("~ ~ ~ ~"),
     n("~ ~ ~ ~"),
@@ -93,7 +93,7 @@ _ARP: cat(
   .delay(1.5)
   // .delayfeedback("<.25 .5 .75 1>")
 
-_LEAD: n("{1 1 3 5 ~ ~ [4 6] 5}%16")
+_lead: n("{1 1 3 5 ~ ~ [4 6] 5}%16")
   .scale(KEY + 3 + MODE)
   .transpose("0 2".slow(6))
   .sound("gm_koto")

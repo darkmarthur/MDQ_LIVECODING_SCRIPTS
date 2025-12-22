@@ -13,8 +13,8 @@
 const KEY = 'c';
 const MODE = ' minor';
 
-KICK: s("bd bd bd bd").bank("RolandTR909")
-HIHAT: s("~ hh ~ hh ~ hh ~ hh")
+kick: s("bd bd bd bd").bank("RolandTR909")
+hihat: s("~ hh ~ hh ~ hh ~ hh")
   .velocity("[0 0.2 0.3 0.4]*4")
   .bank('RolandTR909')
 
@@ -31,7 +31,7 @@ BASS:
     .distort(3.0)
 
 let PTN_LD = "3 4 5 [6 7]*2"
-LEAD: n(PTN_LD)
+lead: n(PTN_LD)
   .scale(KEY + '3' + MODE).fast(2)
   .transpose(0)
   // ._pianoroll({ fold: 1, cycles: 8 })
