@@ -52,7 +52,7 @@ const ISCLAP = true;
 _snare:  s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .bank("tr909")
 
-_ACID_BASS: cat([
+_acid_bass: cat([
     n("0 1 0 3 5 0 7 9"),
     n("0 1 0 3 5 11 13 10")
   ])
