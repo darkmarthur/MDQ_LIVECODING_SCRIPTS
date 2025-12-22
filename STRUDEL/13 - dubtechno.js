@@ -7,49 +7,24 @@
 // https://soundcloud.com/mario-quiroz
 // https://link.me/mariodquiroz
 
-/////////// UTILS CODE ///////////
-register('acid', (lpfMin, lpfMax, pat) => {
-  return pat
-  .s('supersaw')
-  .detune(irand(2))
-  .unison(rand.range(0,3).slow(3))
-  .lpf(sine.range(lpfMin, lpfMax).segment(50).slow(3))
-  .lpenv(2)
-  .dist(1)
-  .lpq(15)
-})
-
-register('dubTick', (pat) => {
-  return pat
-    .lpf(perlin.range(300, 4200).segment(64).slow(10))
-    .dist(perlin.range(0.2, 0.9).segment(64).slow(12))
-    .room(perlin.range(0.2, 2.2).segment(64).slow(8))
-    .delay(perlin.range(0.06, 0.28).segment(64).slow(9))
-    .sometimesBy(0.25, x => x.delay(rand.range(0.12, 0.44)).room(rand.range(1.6, 3.2)))
-    .orbit(1)
-})
-
-register('noiseBed', (pat) => {
-  return pat
-    .hpf(perlin.range(120, 700).segment(96).slow(12))
-    .lpf(perlin.range(900, 6500).segment(96).slow(14))
-    .dist(perlin.range(0.05, 0.55).segment(96).slow(16))
-    .room(perlin.range(0.8, 3.6).segment(96).slow(18))
-    .delay(perlin.range(0.02, 0.22).segment(96).slow(15))
-    .orbit(3)
-})
-
 
 /////////// STRUDEL CODE ///////////
+const PORT = 'IAC Driver Bus 1';
+midiport(PORT);
 
 setcpm(124 / 4);
 const KEY  = 'C'
 const MODE = ':Minor'
 
+// $: note("c3").control([10, slider(48, 0, 127, 1)]).midi()
+fx_fade: ccn(70).ccv(slider(0, 0, 1, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
+fx_stutter: ccn(71).ccv(slider(0, 0, 1, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
+fx_riser: ccn(72).ccv(slider(0.5, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
+fx_release: ccn(73).ccv(0).midi(PORT, { isController: true, midichannel: 1 });
+
 crackle: s("crackle*4")
   // random thinning so it “breathes”
   .degradeBy(perlin.range(0.15, 0.55).slow(8))
-  .noiseBed()
   .fast(1)
 
 noise: s("brown".slow(12))
@@ -74,8 +49,6 @@ const OPENHAT = false;
 hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
   .room(OPENHAT ? 2 : 0.4)
   .bank("tr808")
-    // subtle humanization + occasional thinning (random removal)
-  .degradeBy(perlin.range(0.02, 0.18).slow(10))
   .lpf(perlin.range(3500, 9000).segment(64).slow(12))
   .room(perlin.range(0.15, 0.55).slow(14))
   .delay(perlin.range(0.00, 0.12).slow(16))
@@ -87,33 +60,21 @@ snare: s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .lpf(perlin.range(1200, 3500).slow(12))
   .room(perlin.range(0.3, 1.0).slow(10))
   .delay(perlin.range(0.02, 0.20).slow(14))
-  // dub throw sometimes (never identical)
   .sometimesBy(0.22, x => x.room(rand.range(1.6, 3.2)).delay(rand.range(0.15, 0.35)))
   .dist(0.7)
 
-// Rim/tick = dub event generator
-rim: s("{~ rim ~ ~ ~ rim ~ ~}%8")
-  .bank("tr909")
-  .dubTick()
-  .gain(0.2)
-
-_bass: n("{0 ~ 0 ~ 0 ~ [0 3] ~}%8")
-  .scale(KEY + MODE)
-  .sound("z_sine")
-  // tiny drifting tone so it stays alive but still “sub-first”
+bass: cat([
+    n("<0 2 -1> ~ ~[-1 0]"),
+    n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%2"),
+    n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%2"),
+    n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%2"),
+  ])
+  .scale(KEY + 2 + MODE)
+  .sound("[supersaw, gm_electric_bass_finger]")
+  .lpf(800)
   .lpf(perlin.range(140, 320).segment(96).slow(10))
   .dist(perlin.range(0.4, 0.9).segment(96).slow(12))
   .duck(2)
-
-// acid_bass: cat([
-//     n("0 1 0 3 5 0 7 9"),
-//     n("0 1 0 3 5 11 13 10")
-//   ])
-//   .scale(KEY + 1 + MODE)
-//   .acid(100, 500)
-//   .fast(1)
-//   .orbit(2)
-//   .gain(0.5)
 
 stab: n("{0 ~ ~ ~ ~ ~ ~ ~}%8")
   .scale(KEY + 3 +  MODE)
@@ -123,6 +84,7 @@ stab: n("{0 ~ ~ ~ ~ ~ ~ ~}%8")
   .delay(perlin.range(0.04, 0.28).segment(96).slow(20))
   // rare “wide-open room” moments (breakdown glue)
   .rarely(x => x.room(rand.range(3.2, 5.0)).delay(rand.range(0.18, 0.40)))
+  // .acid(100, 500)
   .orbit(3)
 
 arp: cat(
@@ -147,7 +109,7 @@ arp: cat(
   .delay(1.5)
   // .delayfeedback("<.25 .5 .75 1>")
 
-chord: 
+_chord: 
 cat(
     n("[0, 3, 5]".add("<0 0 4 7>")),
     n("~ ~ ~ ~"),
@@ -171,10 +133,20 @@ cat(
   .room(perlin.range(0.6, 3.2).segment(96).slow(9))
   .delay(perlin.range(0.05, 0.33).segment(96).slow(11))
 
-// _lead: n("{~ ~ 7 ~ ~ ~ [9 10] ~}%16")
-//   .scale(KEY + 2 + MODE)
-//   .sound("gm_koto")
-//   .lpf(perlin.range(900, 3200).slow(14))
+lead: 
+cat(
+    n("<[0, 1, 3] [0, 3, 5] [0, 4, 9]> ~ ~ ~".add("<1 3 2 1>"))
+  )
+  .scale(KEY + 4 + MODE)
+  .sound("[pulse, supersaw, sin]")
+  .decay(0.2)
+  .sustain(0.2)
+  .room(1)
+  .delay(1)
+  .delayfeedback(1)
+  .delayspeed(.5)
+  .slow(2)
+
 //   .room(perlin.range(0.8, 2.8).slow(12))
 //   .delay(perlin.range(0.05, 0.30).slow(13))
 //   .sometimesBy(0.18, x => x.delay(rand.range(0.18, 0.42)).room(rand.range(1.8, 3.6)))
