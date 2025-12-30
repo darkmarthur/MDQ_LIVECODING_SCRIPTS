@@ -20,14 +20,6 @@ const PORT = 'IAC Driver Bus 1';
 midiport(PORT);
 
 setcpm(124 / 4);
-const KEY  = 'C';
-// const MODE = ':Ionian'; // b
-// const MODE = ':Dorian'; // d
-// const MODE = ':Phrygian'; // d
-// const MODE = ':Lydian'; // b
-// const MODE = ':Mixolydian'; // b
-const MODE = ':Aeolian'; // d
-// const MODE = ':Locrian'; // d
 
 const HMAX = 1;
 const HMIN = 0;
@@ -50,8 +42,8 @@ const R4 = "~ x x ~  ~ ~ x ~  ~ x ~ x  ~ ~ x ~"
 
 // Helper: build chords from voicing + roots, then apply rhythm
 // CHORDER([I,IV,V,I]) => n( V9.add( cat(I,IV,V,I) ) ).struct(...)
-const CHORDER = (DEGREES, RHYTHM = R_A, VOICING = V9) =>
-    n(VOICING.add(cat(...DEGREES))).struct(RHYTHM)
+const CHORDER = (DEGREES, RHYTHM = R_A, VOICING = V9) => RHYTHM ? n(VOICING.add(cat(...DEGREES))).struct(RHYTHM) : 
+    n(VOICING.add(cat(...DEGREES)))
 
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ PATTERNS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
@@ -88,23 +80,53 @@ const CHORDER = (DEGREES, RHYTHM = R_A, VOICING = V9) =>
 // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⢿⣿⣿⣳⡿⣞⡿⠊⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 // ⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠛⠛⠛⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀
 
+const KEY  = 'C';
+// const MODE = ':Ionian'; // b
+// const MODE = ':Dorian'; // d
+// const MODE = ':Phrygian'; // d
+// const MODE = ':Lydian'; // b
+// const MODE = ':Mixolydian'; // b
+const MODE = ':Aeolian'; // d natural min
+// const MODE = ':Locrian'; // d
+
 /////////////////////////////////////////////////////////////////////////////////////
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ FX  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-fx_release: ccn(73).ccv(0).midi(PORT, { isController: true, midichannel: 1 });
+const RELEASE_FX = 0
+fx_release: ccn(73).ccv(RELEASE_FX).midi(PORT, { isController: true, midichannel: 1 });
 fx_fade: ccn(70).ccv(slider(0, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
-fx_stutter: ccn(71).ccv(slider(0.2, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
-fx_riser: ccn(72).ccv(slider(0.5, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
+fx_stutter: ccn(71).ccv(slider(0.3, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
+fx_riser: ccn(72).ccv(slider(0.3, 0, 0.5, 0.1)).midi(PORT, { isController: true, midichannel: 1 });
 
 
-_crackle: s("crackle*4")
+_$shepard_riser: note(saw.slow(8).range(48,60).segment(48).echoWith(6, 1/6, (p,i)=>p.add(12*i)))
+  .s("sine")
+  .gain(tri.slow(8).mul(0.12))
+  .release(0.05)
+
+_$atonal_noise: s("pink")
+  .gain(saw.slow(8).segment(64).range(0, 0.7))
+  .hpf(saw.slow(8).segment(64).range(40, 9000))
+  .lpf(saw.slow(8).segment(64).range(800, 18000))
+  .release(0.2)
+  .room(0.25).size(6)
+
+_$tonal_noise: note(saw.slow(8).segment(64).range(48, 60))
+  .s("sawtooth")
+  .noise(0.2) // adds airy noise on top (optional)
+  .gain(saw.slow(8).segment(64).range(0, 0.35))
+  .lpf(saw.slow(8).segment(64).range(400, 16000))
+  .release(0.15)
+  .room(0.2).size(5)
+
+_$crackle: s("crackle*4")
   // random thinning so it “breathes”
   .degradeBy(perlin.range(0.15, 0.55).slow(8))
   .fast(1)
   .gain(slider(0.4, HMIN, HMAX, STEP))
 
-_noise: s("brown".slow(12))
+_$noise: s("brown".slow(12))
   .gain(slider(0.4, HMIN, HMAX, STEP))
 
 // riser: note(time.seg(1)).sound("pink").lpf("1000")
@@ -113,21 +135,20 @@ _noise: s("brown".slow(12))
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ KICK  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-const sidechain = false
-kick: s("bd bd bd bd")
+$kick: s("bd bd bd bd")
   .bank("tr505")
   .lpf(1000)
   .hpf(100)
   .color(R)
   .gain(slider(0.4, HMIN, HMAX, STEP))
 
-sub: n("0 0 0 0")
+$sub: n("0 0 0 0")
   .scale(KEY + 1 + MODE)
   .sound("sbd")
   .decay(1)
-  .duck(sidechain ? 1 : 3)
-  // .duckdepth(1)
-  // .duckattack(1)
+  // .duck(sidechain ? 3 : 1)
+  .duckdepth(0.8)
+  .duckattack(0.1)
   .color(R)
   .gain(slider(0.4, HMIN, HMAX, STEP))
 
@@ -137,7 +158,7 @@ sub: n("0 0 0 0")
 /////////////////////////////////////////////////////////////////////////////////////
 
 const OPENHAT = true;
-_hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
+_$hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
   .room(OPENHAT ? 2 : 0.4)
   .bank("tr808")
   .lpf(perlin.range(3500, 9000).segment(64).slow(12))
@@ -151,7 +172,7 @@ _hihat: s(OPENHAT ? "~ oh ~ oh ~ oh ~ oh" : "~ hh ~ hh ~ hh ~ hh")
 /////////////////////////////////////////////////////////////////////////////////////
 
 const ISCLAP = true;
-snare: s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
+_$snare: s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .bank("tr909")
   .lpf(perlin.range(1200, 3500).slow(12))
   .room(perlin.range(0.3, 1.0).slow(10))
@@ -159,19 +180,34 @@ snare: s(ISCLAP ? "~ cp ~ cp" : "~ sd ~ sd")
   .sometimesBy(0.22, x => x.room(rand.range(1.6, 3.2)).delay(rand.range(0.15, 0.35)))
   .dist(ISCLAP ? 0 : 1)
   .color(O)
-  .gain(slider(0.3, HMIN, HMAX, STEP))
+  .gain(slider(0.2, HMIN, HMAX, STEP))
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ PERCS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
+/////////////////////////////////////////////////////////////////////////////////////
+_$percs:
+  stack(
+    note("33 30 30 30  33 30 30 30 "),
+  )
+  .sound("[xr10_mt, xr10_lt]")
+  .velocity("0.8 0.6 0.7 0.1    0.7 0.2 0.7 0.9")
+  .struct("1 0 1 0   0 0 1 1")
+  .room(0.3)
+  .color(BR)
+  .gain(slider(0.2, HMIN, HMAX, STEP))
+
   
 /////////////////////////////////////////////////////////////////////////////////////
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ BASS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-bass: 
+$bass: 
   // n("{ ~ 0 ~ 0 ~ 0 ~ [0 <3 5>]}%4")
   // n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%2")
-  // n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%2")
+  // n("{ ~ 0 ~ 0 ~ 0 ~ [0 3]}%4")
   // n("~ 1 ~ 1 ~ 1 0 1")
-  n("0 1 3 5  3 7 0 1")
-  .fast(2)
+  n("0 1 3 5  3 7 0 1").fast(2)
   .scale(KEY + 2 + MODE)
   // .transpose("<0 1>".slow(4))
   .sound("[supersaw, gm_electric_bass_finger]")
@@ -182,41 +218,19 @@ bass:
   .gain(slider(0.5, HMIN, HMAX, STEP))
 
 /////////////////////////////////////////////////////////////////////////////////////
-// ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ ARPS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
-/////////////////////////////////////////////////////////////////////////////////////
-
-arp: 
-  arrange(
-    [2, "<[0, 1, 3] [3, 5, 7]>".arp("0 1 3 5  7 9 7 5")],
-    // [2, "~ ~ ~ ~"],
-    // [2, "<[0, 1, 3] [3, 5, 7]>".arp("2 4 5 6  7 9 5 4")],
-    // [2, "~ ~ ~ ~"],
-  ).note()
-  .fast(2)
-  .scale(KEY + 4 + MODE)
-  .sound("gm_shamisen")
-  .lpf(perlin.range(1000, 1500))
-  .vib(100)
-  .room(0.6)
-  .color(P)
-  .gain(slider(0.3, HMIN, HMAX, STEP))
-
-
-
-/////////////////////////////////////////////////////////////////////////////////////
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ PAD  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-_pad: 
+_$pad: 
   arrange(
-    [8, CHORDER([I, IV, V, I], R1, V9)], // (C minor): i → iv → v → i  : <0 3 4 0> => C F G C
-    [4, CHORDER([VI, VII, I, I], R2, V9)], // (C minor): VI → VII → i → i : <5 6 0 0> => Ab Bb C C
-    [8, CHORDER([VI, IV, I, I], R3, V69)], // (C minor): i → VI → VII → i : <0 5 6 0> => C Ab Bb C
-    [4, CHORDER([IV, VI, I, V], R4, VSUS)], // (C minor): iv → VI → i → v  : <3 5 0 4> => F Ab C G
+    [8, CHORDER([I, IV, V, I], null, V7)], // (C minor): i → iv → v → i  : <0 3 4 0> => C F G C
+    // [4, CHORDER([VI, VII, I, I], null, V9)], // (C minor): VI → VII → i → i : <5 6 0 0> => Ab Bb C C
+    // [8, CHORDER([VI, IV, I, I], null, V69)], // (C minor): i → VI → VII → i : <0 5 6 0> => C Ab Bb C
+    // [4, CHORDER([IV, VI, I, V], null, VSUS)], // (C minor): iv → VI → i → v  : <3 5 0 4> => F Ab C G
   )
   .scale(KEY + 3 + MODE)
   .sound("wt_vgame")
-  // .lpf(800)
+  .lpf(800)
   .attack(0.8)
   .decay(0.8)
   .sustain(0.6)
@@ -224,18 +238,40 @@ _pad:
   .delay(1)
   .delayfeedback(1)
   .delayspeed(.5)
-  .gain(slider(0.3, HMIN, HMAX, STEP))
+  .gain(slider(0.2, HMIN, HMAX, STEP))
+
+
+/////////////////////////////////////////////////////////////////////////////////////
+// ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ CHORDS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
+/////////////////////////////////////////////////////////////////////////////////////
+
+_$chords:  
+    arrange(
+      // [8, CHORDER([I, IV, V, I], R1, V9)], // (C minor): i → iv → v → i  : <0 3 4 0> => C F G C
+      // [4, CHORDER([VI, VII, I, I], R1, V9)], // (C minor): VI → VII → i → i : <5 6 0 0> => Ab Bb C C
+      [8, CHORDER([VI, IV, I, I], R4, V69)], // (C minor): i → VI → VII → i : <0 5 6 0> => C Ab Bb C
+      [4, CHORDER([IV, VI, I, V], R4, VSUS)], // (C minor): iv → VI → i → v  : <3 5 0 4> => F Ab C G
+    )
+    .scale(KEY + 3 + MODE)
+    .lpf(900)
+    .decay(0.18)
+    .sustain(0.3)
+    .s("[gm_epiano1, z_sawtooth]")
+    .room(0.4)
+    .gain(slider(0.25, HMIN, HMAX, STEP))
   
 
 /////////////////////////////////////////////////////////////////////////////////////
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ STAB  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-_stab: 
-cat(
+
+_$stab: 
+arrange(
     // n("<[0, 1, 3] [0, 3, 5] [0, 4, 9]> ~ ~ ~".add("<1 3 2 1>"))
     // n("<[0, 6] [0, 5] [0, 9]> ~ ~ ~".add("<1 3 2 1>")),
-    n("<[0, 11] [0, 5] [0, 7]> ~ ~ ~".add("<1 3 2 1>"))
+    [2, n("<[0, 11] [0, 5] [0, 7]> ~ ~ ~".add("<0 3 4 0>"))],
+    [1, silence]
   )
   .scale(KEY + 3 + MODE)
   .sound("[pulse, supersaw, sin]")
@@ -253,47 +289,48 @@ cat(
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ LEAD  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-_lead: 
-  n("[0 9 4] 0")
-  .scale(KEY + 2 + MODE)
-  .transpose("<0 5>")
+_$lead: 
+  n("0 1 3 [5 7]")
+  .slow(4)
+  .scale(KEY + 3 + MODE)
   .room(0.9)
-  .s("sawtooth")
+  .sound("[pulse, supersaw, sin]")
   .lpf(1500)
   .dist(1)
   .orbit(2)
-  .off(0.5, (x) => x.strans(5).decay(0.3))
+  // .off(0.5, (x) => x.strans(5).decay(0.3))
   .duckattack(0.1)
   .color(C)
   .gain(slider(0.15, HMIN, HMAX, STEP))
 
 
 /////////////////////////////////////////////////////////////////////////////////////
-// ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ CHORDS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
+// ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ ARPS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-_chords:  
-    arrange(
-      [8, CHORDER([I, IV, V, I], R1, V9)], // (C minor): i → iv → v → i  : <0 3 4 0> => C F G C
-      [4, CHORDER([VI, VII, I, I], R2, V9)], // (C minor): VI → VII → i → i : <5 6 0 0> => Ab Bb C C
-      [8, CHORDER([VI, IV, I, I], R3, V69)], // (C minor): i → VI → VII → i : <0 5 6 0> => C Ab Bb C
-      [4, CHORDER([IV, VI, I, V], R4, VSUS)], // (C minor): iv → VI → i → v  : <3 5 0 4> => F Ab C G
-    )
-    .scale(KEY + 3 + MODE)
-    .lpf(900)
-    .decay(0.18)
-    .sustain(0.3)
-    .s("[gm_epiano1, z_sawtooth]")
-    .room(0.4)
-    .gain(slider(0.25, HMIN, HMAX, STEP))
+_$arp: 
+  arrange(
+    [2, "<[0, 1, 3] [3, 5, 7]>".arp("0 1 3 5  7 9 7 5")],
+    // [2, "~ ~ ~ ~"],
+    // [2, "<[0, 1, 3] [3, 5, 7]>".arp("2 4 5 6  7 9 5 4")],
+    // [2, "~ ~ ~ ~"],
+  ).note()
+  .fast(2)
+  .scale(KEY + 4 + MODE)
+  .sound("gm_shamisen")
+  .lpf(perlin.range(1000, 1500))
+  .vib(100)
+  .room(0.6)
+  .color(P)
+  .gain(slider(0.3, HMIN, HMAX, STEP))
+  .pianoroll()
 
 /////////////////////////////////////////////////////////////////////////////////////
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ SMPLS  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
 /////////////////////////////////////////////////////////////////////////////////////
 
-
-samples('github:tidalcycles/dirt-samples')
-dnb: 
+samples('github:tidalcycles/dirt-samples') // https://github.com/tidalcycles/Dirt-Samples
+_$dnb: 
   s("breaks165")
     .fit().scrub("{0@3 0@2 4@3}%8".div(16))
     // .fit().slice([0,.25,.5,.75], "0 1 1 <2 3>")
@@ -301,18 +338,28 @@ dnb:
     // .splice(8,  "0 1 [2 3 0]@2 3 0@2 7")
     // .scrub("{0.1!2 .25@3 0.7!2 <0.8:1.5>}%8")
     .gain(slider(0.2, HMIN, HMAX, STEP))
+    // .spectrum()
 
 // samples('shabda/speech/ja-JP/m:私は,ただの,媒介,であり')
 samples('shabda/speech:now,then,once')
-voxen:
+_$voxen:
   // s("私は ただの 媒介 であり 彼が 私を 通して 語っている のです").slow(4).late(0.125)
   // s("in_the_future in_thepast forever")
   s("once now then once")
   .room(0.5)
   .vib("<1 2 3 4 5 6 7 8>")
-  .splice(5, "1 2 3 4 5 6 7 8")
+  .splice(6, "1 2 3 4 5 6 7 8")
   // .splice(8, "0 1 [2 3 0]@2 3 0@2 7")
   .gain(slider(0.45, HMIN, HMAX, STEP))
+
+_$voxen2:
+  // n(irand(8).seg(16))
+  n("0")
+  .scale(KEY + 3 + MODE)
+  .sound("rave")
+  .splice(6, "1 2 3 4 5 6 7 8")
+  .lpf(800)
+  
 
 
 // ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸ ✧ ✦ ✧ HYDRA  ✧ ✦ ✧ ¸,ø¤º°`°º¤ø,¸¸,ø¤º°`°º¤ø,¸
@@ -355,10 +402,36 @@ voxen:
 await initHydra({detectAudio: false, feedStrudel: 1})
 let PTN_BEAT = "0 1 2 3 4 5 6 7 8"
 
+const SRC_STRUDEL = () => 
+  src(s0)
+  .kaleid(
+    H(PTN_BEAT)
+  )
+  .diff(osc(1,0.5,5))
+  // // .modulateScale(osc(2,-0.25,1))
+  // // .saturate(2)
+  // .rotate(0, 0.1)
+  // .modulate(o0, () => mouse.x * 0.0003)
+  // .scale(H(PTN_BD))
+  // .modulate(voronoi(10,2,2))
+  // .colorama( ()=>Math.sin(time/27)*.01222+9.89)
+  // .mult(gradient().color(-1,-1,-1))
+  // .modulateKaleid(osc(11,0.5,0),50)
+  // .modulateRepeat(osc(10), 3.0, 3.0, 0.5, 0.5)
+  // .modulateRotate(osc(1,0.5,0).kaleid(50).scale(0.5),15,0)
+  // .mult(osc(50,-0.1,8).kaleid(9))
+  // .modulateScale(osc(4,-0.5,0).kaleid(50).scale(0.5),15,0)
+  // .modulate(osc(25,0.1,0.5)
+  //             .kaleid(50)
+  //             .scale(({time})=>Math.sin(time*1)*0.5+1)
+  //             .modulate(noise(0.6,0.5)),
+  //             0.5)
+
+
 const HGRADIENT = () =>
   gradient(1)
-    .mask(noise(1, 1).thresh(0.3))
-    .add(gradient(0.5).mask(noise(1, 1).thresh(0.3)))
+    // .mask(noise(1, 1).thresh(0.3))
+    // .add(gradient(0.5).mask(noise(1, 1).thresh(0.3)))
     .diff(src(o0).modulateScrollX(osc(1, 0.1)).scale(0.7))
     .modulateScale(noise(() => time / .01, 0.1))
     .color(H(PTN_BEAT))
@@ -376,6 +449,7 @@ const HOSC = () =>
 solid(0, 0, 0)
   .layer(HGRADIENT(), 1)
   .mult(HOSC(), 1)
+  .mult(SRC_STRUDEL(), 1)
   .out(o0)
 
 
