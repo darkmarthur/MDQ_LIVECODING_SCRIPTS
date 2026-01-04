@@ -17,3 +17,5 @@ voronoi(350, 0.15)
   )
   .brightness([-0.02, -0.17].smooth().fast(0.5))
   .out();
+$: n("[~ 0 0 7]*4".add("<0 0 3 <2 -1>>")).scale("g1:minor").s("saw").lpf(100).lpe(2).lpd(0.1)
+.gain(0.9).shape(0.5)
