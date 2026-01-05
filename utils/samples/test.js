@@ -9,6 +9,8 @@ samples('github:tidalcycles/clean-samples')
 samples('github:kyrsive/gc-glitches')
 samples('github:kyrsive/gc-wavetables')
 
+samples('github:darkmarthur/MDQ_LIVECODING_SCRIPTS')
+
 samples({
   jp1: '234965__reitanna__japanese-what-do-you-want.wav',
   jp2: '235019__reitanna__japanese-hey.wav',
@@ -18,7 +20,7 @@ samples({
   jp6: '241215__reitanna__japanese-phrase-request.wav',
   jp7: '323192__alivvie__hisashiburi1.mp3',
   jp8: '323208__alivvie__ohayou2.mp3'
- }, 'https://raw.githubusercontent.com/darkmarthur/LiveCoding/main/utils/samples/');
+ }, 'https://raw.githubusercontent.com/darkmarthur/MDQ_LIVECODING_SCRIPTS/main/utils/samples/japanese');
 
 JPVOX: s("<jp1 jp2 jp3>")
   .scrub(rand.seg(16))
@@ -38,7 +40,7 @@ _GLITCH: n("9 8 6 18 20").s("gglitch")
   // .mask("<0 1 1 0 1 0 0 0 0>*2")
   .gain(0.5)
 
-samples('github:darkmarthur/LiveCoding/main/utils/samples')
+samples('github:darkmarthur/MDQ_LIVECODING_SCRIPTS')
 JPVOX: s("<japanese:0 japanese:1 japanese:2 japanese:3>")
   .gain(1.8)
   .slow(2)
