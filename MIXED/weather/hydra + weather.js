@@ -21,11 +21,13 @@ const lerp = (a, b, t) => a + (b - a) * t;
 // Open-Meteo: sin API key y normalmente CORS-friendly
 async function fetchWeather(lat = 18.92, lon = -99.23) { // ajusta coords
   try {
-    const url =
-      `https://api.open-meteo.com/v1/forecast` +
-      `?latitude=${lat}&longitude=${lon}` +
-      `&current=temperature_2m,wind_speed_10m,cloud_cover` +
-      `&timezone=auto`;
+        const url ='https://api.open-meteo.com/v1/forecast?latitude=18.92&longitude=9.23&current=temperature_2m,wind_speed_10m,cloud_cover&timezone=auto'
+
+    // const url =
+    //   `https://api.open-meteo.com/v1/forecast` +
+    //   `?latitude=${lat}&longitude=${lon}` +
+    //   `&current=temperature_2m,wind_speed_10m,cloud_cover` +
+    //   `&timezone=auto`;
 
     const res = await fetch(url);
     const json = await res.json();
@@ -36,7 +38,7 @@ async function fetchWeather(lat = 18.92, lon = -99.23) { // ajusta coords
     state.cloudPct = cur.cloud_cover;
     state.lastUpdate = Date.now();
   } catch (err) {
-    console.warn("fetchWeather failed:", err);
+    console.warn('fetchWeather failed:', err);
   }
 }
 

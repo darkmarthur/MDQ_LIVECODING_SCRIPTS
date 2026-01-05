@@ -26,6 +26,8 @@ setcpm(120 / 4);
 const KEY = 'A'
 const MODE = ':Phrygian'
 
+const BASS = KEY + 1 + MODE
+
 const sidechain = true
 _kick: s("bd bd bd bd")
   .bank("tr505")
